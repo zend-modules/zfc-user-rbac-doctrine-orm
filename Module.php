@@ -12,6 +12,7 @@ namespace ZfcUserRbacDoctrineORM;
 
 use Zend\Mvc\MvcEvent;
 use Doctrine\ORM\Mapping\Driver\XmlDriver;
+use ZfcUserRbacDoctrineORM\Listener\NavigationListener;
 
 class Module
 {
@@ -42,12 +43,16 @@ class Module
                 'zfcuser_module_options' => 'ZfcUserRbacDoctrineORM\Factory\ModuleOptionsFactory',
                 'zfcuser_user_mapper'    => 'ZfcUserRbacDoctrineORM\Factory\UserMapperFactory',
                 'zfcuser_role_mapper'    => 'ZfcUserRbacDoctrineORM\Factory\RoleMapperFactory',
+                'ZfcUserRbacDoctrineORM\Listener\NavigationListener' => 'ZfcUserRbacDoctrineORM\Factory\NavigationListenerFactory',
             ),
         );
     }
     
     public function onBootstrap(MvcEvent $e)
     {
+        /**
+         * @var \Zend\Mvc\ApplicationInterface $app
+         */
         $app     = $e->getParam('application');
         $sm      = $app->getServiceManager();
         $options = $sm->get('zfcuser_module_options');
@@ -57,5 +62,8 @@ class Module
             $chain = $sm->get('doctrine.driver.orm_default');
             $chain->addDriver(new XmlDriver(__DIR__ . '/config/xml/zfcuserrbacdoctrineorm'), 'ZfcUserRbacDoctrineORM\Entity');
         }
+        
+        $navListener = $sm->get('ZfcUserRbacDoctrineORM\Listener\NavigationListener');
+        $navListener->attachShared($app->getEventManager()->getSharedManager());
     }
 }
