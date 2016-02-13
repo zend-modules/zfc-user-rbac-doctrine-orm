@@ -10,22 +10,11 @@
 
 namespace ZfcUserRbacDoctrineORM;
 
-use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
-use Zend\ModuleManager\Feature\ConfigProviderInterface;
-use Zend\ModuleManager\Feature\DependencyIndicatorInterface;
-use Zend\ModuleManager\Feature\ServiceProviderInterface;
+use Zend\Mvc\MvcEvent;
+use Doctrine\ORM\Mapping\Driver\XmlDriver;
 
-class Module implements
-    AutoloaderProviderInterface,
-    ConfigProviderInterface,
-    DependencyIndicatorInterface,
-    ServiceProviderInterface
+class Module
 {
-    /**
-     * Return an array for passing to Zend\Loader\AutoloaderFactory.
-     *
-     * @return array
-     */
     public function getAutoloaderConfig()
     {
         return array(
@@ -37,29 +26,9 @@ class Module implements
         );
     }
 
-    /**
-     * Returns configuration to merge with application configuration
-     *
-     * @return array|\Traversable
-     */
     public function getConfig()
     {
         return include __DIR__ . '/config/module.config.php';
-    }
-
-    /**
-     * Return an array of modules on which the current one depends on
-     *
-     * @return array
-     */
-    public function getModuleDependencies()
-    {
-        return array(
-            'DoctrineModule',
-            'DoctrineORMModule',
-            'ZfcBase',
-            'ZfcUser',
-        );
     }
 
     public function getServiceConfig()
@@ -67,25 +36,26 @@ class Module implements
         return array(
             'aliases' => array(
                 'zfcuser_doctrine_em' => 'Doctrine\ORM\EntityManager',
+                'Zend\Authentication\AuthenticationService' => 'zfcuser_auth_service',
             ),
             'factories' => array(
-                'zfcuser_module_options' => function ($sm) {
-                    $config = $sm->get('Configuration');
-                    return new Options\ModuleOptions(isset($config['zfcuser']) ? $config['zfcuser'] : array());
-                },
-                'zfcuser_user_mapper' => function ($sm) {
-                    return new Mapper\User(
-                        $sm->get('zfcuser_doctrine_em'),
-                        $sm->get('zfcuser_module_options')
-                    );
-                },
-                'zfcuser_role_mapper' => function ($sm) {
-                    return new Mapper\Role(
-                        $sm->get('zfcuser_doctrine_em'),
-                        $sm->get('zfcuser_module_options')
-                    );
-                },
+                'zfcuser_module_options' => 'ZfcUserRbacDoctrineORM\Factory\ModuleOptionsFactory',
+                'zfcuser_user_mapper'    => 'ZfcUserRbacDoctrineORM\Factory\UserMapperFactory',
+                'zfcuser_role_mapper'    => 'ZfcUserRbacDoctrineORM\Factory\RoleMapperFactory',
             ),
         );
+    }
+    
+    public function onBootstrap(MvcEvent $e)
+    {
+        $app     = $e->getParam('application');
+        $sm      = $app->getServiceManager();
+        $options = $sm->get('zfcuser_module_options');
+
+        // Add the default entity driver only if specified in configuration
+        if ($options->getEnableDefaultEntities()) {
+            $chain = $sm->get('doctrine.driver.orm_default');
+            $chain->addDriver(new XmlDriver(__DIR__ . '/config/xml/zfcuserrbacdoctrineorm'), 'ZfcUserRbacDoctrineORM\Entity');
+        }
     }
 }
