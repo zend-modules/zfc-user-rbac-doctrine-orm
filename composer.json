@@ -7,14 +7,14 @@
         "zf2",
         "Rbac"
     ],
-    "homepage": "https://github.com/zend-modules/ZfcUserRbacDoctrineORM",
+    "homepage": "https://github.com/zend-modules/zfc-user-rbac-doctrine-orm",
     "require": {
         "php": ">=5.4",
         "doctrine/doctrine-orm-module": "0.*",
         "zendframework/zend-eventmanager": "~2.5",
         "zendframework/zend-navigation": "~2.5",
         "zendframework/zend-servicemanager": "~2.5",
-        "zendframework/zend-stdlib": "~2.7"
+        "zendframework/zend-stdlib": "~2.7",
         "zf-commons/zfc-user": "1.*",
         "zf-commons/zfc-rbac": "dev-master"
     },
