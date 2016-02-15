@@ -9,7 +9,7 @@
     ],
     "homepage": "https://github.com/zend-modules/zfc-user-rbac-doctrine-orm",
     "require": {
-        "php": ">=5.4",
+        "php": ">=5.5",
         "doctrine/doctrine-orm-module": "0.*",
         "zendframework/zend-eventmanager": "~2.5",
         "zendframework/zend-navigation": "~2.5",
